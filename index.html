@@ -3,1109 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Système de Réservation - Bornes de Recharge</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00d4aa">
+    <title>Bornes de Recharge - Système de Réservation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
-            --bg-primary: #0a0f1c;
-            --bg-secondary: #111927;
-            --bg-tertiary: #1a2333;
-            --card-bg: rgba(26, 35, 51, 0.85);
-            --border-color: rgba(0, 212, 170, 0.15);
-            --primary: #00d4aa;
-            --primary-dark: #00a885;
-            --secondary: #00fff5;
-            --accent: #7c3aed;
-            --success: #22c55e;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #0f1420;
+            --bg-tertiary: #151b2b;
+            --card-bg: rgba(21, 27, 43, 0.9);
+            --border: rgba(99, 102, 241, 0.15);
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --text-primary: #f8fafc;
+            --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --glow: rgba(0, 212, 170, 0.25);
-            --shadow: rgba(0, 212, 170, 0.15);
-            --glass: rgba(17, 25, 39, 0.75);
+            --glow: rgba(99, 102, 241, 0.3);
         }
-
+        
         [data-theme="light"] {
             --bg-primary: #f8fafc;
             --bg-secondary: #ffffff;
             --bg-tertiary: #f1f5f9;
             --card-bg: rgba(255, 255, 255, 0.95);
-            --border-color: rgba(0, 212, 170, 0.2);
-            --primary: #00a885;
-            --primary-dark: #008870;
-            --secondary: #0891b2;
-            --accent: #7c3aed;
-            --success: #16a34a;
-            --warning: #d97706;
-            --danger: #dc2626;
+            --border: rgba(99, 102, 241, 0.2);
             --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --glow: rgba(0, 168, 133, 0.2);
-            --shadow: rgba(0, 168, 133, 0.1);
-            --glass: rgba(255, 255, 255, 0.85);
+            --text-secondary: #475569;
         }
-
+        
         body {
-            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
-            transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                        color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            transition: all 0.5s ease;
         }
-
+        
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background: 
-                radial-gradient(ellipse 80% 50% at 20% 30%, var(--primary), transparent),
-                radial-gradient(ellipse 60% 50% at 80% 70%, var(--accent), transparent);
-            opacity: 0.08;
+            background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15), transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15), transparent 50%);
             pointer-events: none;
-            z-index: 0;
+            animation: gradientShift 20s ease infinite;
         }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px 20px 120px;
-        }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 420px;
-            pointer-events: none;
-        }
-
+        
+        @keyframes gradientShift { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px 20px 120px; position: relative; z-index: 1; }
+        
+        /* Toast */
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 420px; }
         .toast {
-            pointer-events: auto;
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 22px;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            box-shadow: 0 10px 40px var(--shadow);
-            animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            gap: 14px;
+            box-shadow: 0 12px 48px var(--glow);
+            animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(100%) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-
-        .toast.out {
-            animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        @keyframes slideOutRight {
-            to {
-                opacity: 0;
-                transform: translateX(120%) scale(0.9);
-            }
-        }
-
-        .toast-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .toast.success .toast-icon {
-            background: rgba(34, 197, 94, 0.15);
-            color: var(--success);
-        }
-
-        .toast.error .toast-icon {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-        }
-
-        .toast.warning .toast-icon {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-
-        .toast.info .toast-icon {
-            background: rgba(0, 212, 170, 0.15);
-            color: var(--primary);
-        }
-
-        .toast-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .toast-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .toast-message {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .toast-close {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .toast-close:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        .toast.out { animation: slideOut 0.4s ease forwards; }
+        @keyframes slideOut { to { opacity: 0; transform: translateX(120%); } }
+        .toast-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+        .toast.success .toast-icon { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .toast.error .toast-icon { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .toast.warning .toast-icon { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
+        .toast-message { font-size: 0.86rem; color: var(--text-secondary); }
+        .toast-close { background: none; border: none; color: var(--text-secondary); font-size: 1.3rem; cursor: pointer; }
+        
         /* Theme Toggle */
         .theme-toggle {
             position: fixed;
             top: 24px;
             left: 24px;
             z-index: 1000;
-            width: 48px;
-            height: 48px;
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            background: var(--card-bg);
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 20px var(--shadow);
+            transition: all 0.4s ease;
         }
-
-        .theme-toggle:hover {
-            transform: scale(1.05) rotate(15deg);
-            border-color: var(--primary);
-            box-shadow: 0 6px 30px var(--glow);
-        }
-
-        .theme-toggle svg {
-            width: 22px;
-            height: 22px;
-            stroke: var(--text-primary);
-            transition: stroke 0.3s ease;
-        }
-
-        /* Top Navigation */
-        .top-nav {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 1000;
-            display: flex;
-            gap: 12px;
-        }
-
+        .theme-toggle:hover { transform: scale(1.08) rotate(15deg); border-color: var(--primary); }
+        .theme-toggle svg { width: 24px; height: 24px; stroke: var(--text-primary); stroke-width: 2; }
+        
+        /* Nav */
+        .top-nav { position: fixed; top: 24px; right: 24px; z-index: 1000; display: flex; gap: 12px; }
         .nav-btn {
-            padding: 12px 24px;
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
+            padding: 14px 26px;
+            background: var(--card-bg);
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             color: var(--text-primary);
             font-weight: 600;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 20px var(--shadow);
+            transition: all 0.4s ease;
         }
-
-        .nav-btn:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-            background: var(--primary);
-            color: var(--bg-primary);
-            box-shadow: 0 8px 30px var(--glow);
-        }
-
+        .nav-btn:hover { transform: translateY(-3px); border-color: var(--primary); background: var(--primary); color: #fff; }
+        
         /* Header */
-        header {
-            text-align: center;
-            padding: 80px 20px 50px;
-            position: relative;
-        }
-
-        .logo {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
+        header { text-align: center; padding: 100px 20px 60px; }
+        .header-icon { font-size: 5rem; margin-bottom: 24px; animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
         h1 {
-            font-size: clamp(2.5rem, 6vw, 4.2rem);
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -2px;
-            margin-bottom: 12px;
-            animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            letter-spacing: -0.04em;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.9s ease;
         }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: fadeIn 1s 0.3s ease both;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Charging Stations Grid */
-        .stations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
-            margin-bottom: 80px;
-        }
-
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .subtitle { font-size: 1.05rem; color: var(--text-secondary); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+        
+        /* Stations Grid */
+        .stations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 28px; margin-bottom: 100px; }
         .station-card {
             background: var(--card-bg);
-            backdrop-filter: blur(24px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-            animation: cardFadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-        }
-
-        .station-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .station-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--primary);
-            box-shadow: 0 20px 50px var(--glow);
-        }
-
-        .station-card:hover::before {
-            opacity: 1;
-        }
-
-        @keyframes cardFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .station-card:nth-child(1) { animation-delay: 0.1s; }
-        .station-card:nth-child(2) { animation-delay: 0.2s; }
-        .station-card:nth-child(3) { animation-delay: 0.3s; }
-        .station-card:nth-child(4) { animation-delay: 0.4s; }
-
-        .station-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 24px;
-        }
-
-        .station-info h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-            transition: color 0.3s ease;
-        }
-
-        .station-card:hover .station-info h3 {
-            color: var(--primary);
-        }
-
-        .station-id {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.82rem;
-            color: var(--text-secondary);
-            letter-spacing: 1px;
-        }
-
-        .station-status {
-            padding: 6px 14px;
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border);
             border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            animation: cardFadeIn 0.8s ease both;
+        }
+        @keyframes cardFadeIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .station-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 24px 64px var(--glow); }
+        .station-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+        .station-info h3 { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+        .station-id { font-family: 'JetBrains Mono', monospace; font-size: 0.84rem; color: var(--text-secondary); }
+        .station-status {
+            padding: 7px 16px 7px 26px;
+            border-radius: 24px;
+            font-size: 0.76rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            position: relative;
         }
-
-        .station-status.available {
-            background: rgba(34, 197, 94, 0.15);
-            color: var(--success);
-            border: 1px solid var(--success);
+        .station-status::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: pulse 2s ease infinite;
         }
-
-        .station-status.occupied {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .station-status.offline {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .station-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .station-status.available { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .station-status.available::before { background: var(--success); }
+        .station-status.occupied { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .station-status.occupied::before { background: var(--warning); }
+        .station-details { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
         .detail-item {
             background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 14px;
-            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.4s ease;
         }
-
-        .detail-item:hover {
-            border-color: var(--primary);
-            transform: scale(1.03);
-        }
-
-        .detail-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        .detail-value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
+        .detail-item:hover { border-color: var(--primary); transform: scale(1.05); }
+        .detail-label { font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+        .detail-value { font-size: 1.05rem; font-weight: 800; }
         .reserve-btn {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             color: #fff;
             font-weight: 700;
-            font-size: 0.88rem;
-            letter-spacing: 1px;
+            font-size: 0.9rem;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.4s ease;
         }
-
-        .reserve-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s ease, height 0.6s ease;
-        }
-
-        .reserve-btn:hover::before {
-            width: 400px;
-            height: 400px;
-        }
-
-        .reserve-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px var(--glow);
-        }
-
+        .reserve-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 48px var(--glow); }
+        .reserve-btn:disabled { background: var(--bg-tertiary); color: var(--text-secondary); cursor: not-allowed; }
+        
         /* Section Title */
         .section-title {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 800;
             text-align: center;
-            margin: 80px 0 40px;
+            margin: 100px 0 50px;
             position: relative;
-            padding-bottom: 16px;
+            padding-bottom: 20px;
         }
-
         .section-title::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 2px;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 3px;
         }
-
-        /* Reservations Timeline */
-        .reservations-container {
-            display: grid;
-            gap: 20px;
-        }
-
+        
+        /* Reservations */
+        .reservations-container { display: grid; gap: 24px; }
         .reservation-card {
             background: var(--card-bg);
-            backdrop-filter: blur(24px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 20px var(--shadow);
-        }
-
-        .reservation-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 15px 40px var(--glow);
-        }
-
-        .reservation-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .reservation-station-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .station-icon {
-            font-size: 2.5rem;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .reservation-card:hover .station-icon {
-            transform: scale(1.15) rotate(5deg);
-        }
-
-        .station-details h3 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .vehicle-plate {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            letter-spacing: 2px;
-            background: var(--bg-tertiary);
-            padding: 4px 12px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-
-        .reservation-status-badge {
-            padding: 8px 18px;
+            backdrop-filter: blur(32px);
+            border: 1px solid var(--border);
             border-radius: 20px;
-            font-size: 0.75rem;
+            padding: 32px;
+            transition: all 0.5s ease;
+        }
+        .reservation-card:hover { transform: translateY(-6px); border-color: var(--primary); box-shadow: 0 20px 60px var(--glow); }
+        .reservation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .reservation-station-info { display: flex; align-items: center; gap: 18px; }
+        .station-icon { font-size: 2.8rem; }
+        .station-details h3 { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+        .vehicle-plate {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .reservation-status-badge {
+            padding: 9px 20px;
+            border-radius: 24px;
+            font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: rgba(0, 212, 170, 0.15);
+            background: rgba(99, 102, 241, 0.15);
             border: 1px solid var(--primary);
             color: var(--primary);
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.6;
-            }
-        }
-
-        .reservation-body {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .reservation-info-block h4 {
-            color: var(--text-secondary);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-
-        .reservation-info-block p {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .time-range {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .time-arrow {
-            color: var(--primary);
-            font-size: 1.2rem;
-            animation: slideArrow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes slideArrow {
-            0%, 100% {
-                transform: translateX(0);
-            }
-            50% {
-                transform: translateX(5px);
-            }
-        }
-
-        .reservation-actions {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
+        .reservation-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 24px; }
+        .reservation-info-block h4 { color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; margin-bottom: 8px; }
+        .reservation-info-block p { font-size: 1rem; font-weight: 700; }
+        .time-range { display: flex; align-items: center; gap: 12px; font-size: 1rem; font-weight: 700; }
+        .time-arrow { color: var(--primary); font-size: 1.3rem; }
+        .reservation-actions { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
         .end-btn {
-            padding: 12px 24px;
+            padding: 14px 28px;
             background: rgba(239, 68, 68, 0.1);
             border: 1.5px solid var(--danger);
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--danger);
             font-weight: 700;
-            font-size: 0.82rem;
-            letter-spacing: 0.5px;
+            font-size: 0.85rem;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.4s ease;
         }
-
-        .end-btn:hover {
-            background: var(--danger);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
-            transform: translateY(-2px);
-        }
-
+        .end-btn:hover { background: var(--danger); color: #fff; transform: translateY(-3px); }
+        
         /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state-icon {
-            font-size: 4rem;
-            margin-bottom: 16px;
-            opacity: 0.5;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .empty-state-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
+        .empty-state { text-align: center; padding: 100px 20px; color: var(--text-secondary); }
+        .empty-state-icon { font-size: 5rem; margin-bottom: 20px; opacity: 0.4; }
+        .empty-state-text { font-size: 1.15rem; font-weight: 500; }
+        
         /* Modal */
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
             z-index: 5000;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            animation: modalFadeIn 0.3s ease;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
+        .modal.active { display: flex; }
         .modal-content {
             background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 36px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
             max-width: 650px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
+            animation: modalSlide 0.6s ease;
         }
-
-        @keyframes modalSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
+        @keyframes modalSlide { from { opacity: 0; transform: translateY(60px) scale(0.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
         .modal-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
         .close-btn {
             background: none;
             border: none;
             color: var(--text-secondary);
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 10px;
             transition: all 0.3s ease;
         }
-
-        .close-btn:hover {
-            background: var(--card-bg);
-            color: var(--danger);
-            transform: rotate(90deg);
-        }
-
-        /* Form Styles */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-
-        .form-input,
-        .form-select {
+        .close-btn:hover { background: var(--card-bg); color: var(--danger); transform: rotate(90deg); }
+        
+        /* Form */
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; margin-bottom: 10px; font-weight: 600; font-size: 0.92rem; }
+        .form-input, .form-select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 18px;
             background: var(--bg-tertiary);
-            border: 1.5px solid var(--border-color);
-            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
             color: var(--text-primary);
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             font-family: inherit;
             transition: all 0.3s ease;
         }
-
-        .form-input:focus,
-        .form-select:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
             transform: translateY(-2px);
         }
-
-        .form-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .form-select {
-            cursor: pointer;
-        }
-
+        
         /* Time Slots */
-        .time-slots-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 12px;
-        }
-
+        .time-slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 12px; margin-top: 14px; }
         .time-slot {
-            padding: 12px 8px;
+            padding: 14px 10px;
             background: var(--bg-tertiary);
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             text-align: center;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            font-family: 'IBM Plex Mono', monospace;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-weight: 700;
+            font-size: 0.88rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.4s ease;
         }
-
-        .time-slot:hover:not(.occupied):not(.disabled) {
-            border-color: var(--primary);
-            background: var(--card-bg);
-            transform: translateY(-3px) scale(1.05);
-        }
-
-        .time-slot.selected {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: #fff;
-            box-shadow: 0 4px 16px var(--glow);
-        }
-
-        .time-slot.occupied {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: rgba(245, 158, 11, 0.3);
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .time-slot.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
+        .time-slot:hover:not(.occupied):not(.disabled) { border-color: var(--primary); transform: translateY(-4px); }
+        .time-slot.selected { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: var(--primary); color: #fff; }
+        .time-slot.occupied { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); opacity: 0.5; cursor: not-allowed; }
+        .time-slot.disabled { opacity: 0.3; cursor: not-allowed; }
+        
         .submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            border-radius: 10px;
+            border-radius: 14px;
             color: #fff;
             font-weight: 700;
-            font-size: 0.95rem;
-            letter-spacing: 1px;
+            font-size: 1rem;
             text-transform: uppercase;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.4s ease;
         }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s ease, height 0.6s ease;
-        }
-
-        .submit-btn:hover::before {
-            width: 500px;
-            height: 500px;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px var(--glow);
-        }
-
-        /* Admin Panel */
-        .admin-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 32px;
-        }
-
-        .admin-section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 24px;
-        }
-
-        .stations-list {
-            display: grid;
-            gap: 20px;
-        }
-
-        .delete-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--danger), #dc2626);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .delete-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-        }
-
-        /* History Table */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px 16px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-5px);
-        }
-
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 900;
-            color: var(--primary);
-            margin-bottom: 6px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .filters-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            align-items: end;
-        }
-
-        .export-btn {
-            padding: 14px 24px;
-            background: linear-gradient(135deg, var(--success), #16a34a);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.82rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
-        }
-
-        .table-container {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .history-table th {
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-            padding: 16px 20px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .history-table td {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-size: 0.88rem;
-        }
-
-        .history-table tbody tr {
-            transition: background 0.3s ease;
-        }
-
-        .history-table tbody tr:hover {
-            background: var(--card-bg);
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 16px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-completed {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .status-active {
-            background: rgba(0, 212, 170, 0.15);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-
+        .submit-btn:hover { transform: translateY(-4px); box-shadow: 0 16px 56px var(--glow); }
+        
         /* Footer */
         .footer {
             position: fixed;
@@ -1114,92 +398,93 @@
             right: 0;
             z-index: 500;
             background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-            border-top: 1px solid var(--border-color);
-            backdrop-filter: blur(24px);
-            padding: 18px 24px;
-            box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.3);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(32px);
+            padding: 20px 28px;
         }
-
-        .footer-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .footer-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
+        .footer-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .footer-text { font-size: 0.92rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; }
         .footer-name {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 800;
-            font-size: 1rem;
-            letter-spacing: 0.5px;
+            font-weight: 900;
+            font-size: 1.05rem;
         }
-
-        .footer-separator {
-            color: var(--primary);
+        .footer-separator { color: var(--primary); font-weight: 700; }
+        .footer-role { color: var(--text-primary); font-weight: 700; padding: 6px 16px; background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); }
+        
+        /* Admin */
+        .admin-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 36px; }
+        .admin-section-title { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 28px; }
+        .stations-list { display: grid; gap: 24px; }
+        .delete-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
             font-weight: 700;
+            cursor: pointer;
+            margin-top: 14px;
+            transition: all 0.4s ease;
         }
-
-        .footer-role {
-            color: var(--text-primary);
+        .delete-btn:hover { transform: translateY(-3px); }
+        
+        /* History */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 36px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; transition: all 0.4s ease; }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-6px); }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .stat-label { font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        .filters-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; align-items: end; }
+        .export-btn {
+            padding: 16px 28px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
             font-weight: 700;
-            padding: 5px 14px;
-            background: var(--card-bg);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            cursor: pointer;
+            transition: all 0.4s ease;
         }
-
-        .footer-role:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .export-btn:hover { transform: translateY(-3px); }
+        .table-container { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .history-table { width: 100%; border-collapse: collapse; }
+        .history-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 18px 24px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
         }
-
-        /* Responsive */
+        .history-table td { padding: 18px 24px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .history-table tbody tr:hover { background: var(--card-bg); }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-completed { background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: var(--success); }
+        .status-active { background: rgba(99, 102, 241, 0.15); border: 1px solid var(--primary); color: var(--primary); }
+        
         @media (max-width: 768px) {
-            .top-nav {
-                top: auto;
-                bottom: 90px;
-                right: 16px;
-                flex-direction: column;
-            }
-
-            .theme-toggle {
-                top: 16px;
-                left: 16px;
-            }
-
-            .stations-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-content {
-                padding: 24px;
-            }
-
-            header {
-                padding: 60px 16px 40px;
-            }
-
-            .toast-container {
-                left: 16px;
-                right: 16px;
-                max-width: none;
-            }
+            .stations-grid { grid-template-columns: 1fr; }
+            .top-nav { top: auto; bottom: 100px; right: 16px; flex-direction: column; }
         }
     </style>
 </head>
@@ -1228,9 +513,9 @@
 
 <div class="container">
     <header>
-        <div class="logo">⚡</div>
+        <div class="header-icon"></div>
         <h1>Bornes de Recharge</h1>
-        <p class="subtitle">Système de Réservation Intelligent</p>
+        <p class="subtitle">Système de Réservation  Des Bornes Du GMR Lorrainet</p>
     </header>
 
     <div class="stations-grid" id="stationsGrid"></div>
@@ -1239,7 +524,7 @@
     <div class="reservations-container" id="reservationsContainer">
         <div class="empty-state">
             <div class="empty-state-icon">⏳</div>
-            <p class="empty-state-text">Chargement des réservations...</p>
+            <p class="empty-state-text">Chargement...</p>
         </div>
     </div>
 </div>
@@ -1257,42 +542,29 @@
     </div>
 </footer>
 
-<!-- Modal: Admin Login -->
+<!-- Modals (shortened for brevity - same structure as original) -->
 <div class="modal" id="adminLoginModal">
-    <div class="modal-content" style="max-width: 420px;">
-        <div class="modal-header">
-            <h2 class="modal-title">🔐 Accès Admin</h2>
-        </div>
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header"><h2 class="modal-title">🔐 Accès Admin</h2></div>
         <div class="form-group">
-            <input type="password" id="adminPassword" class="form-input" placeholder="Mot de passe administrateur" style="text-align: center;">
+            <input type="password" id="adminPassword" class="form-input" placeholder="Mot de passe">
         </div>
         <button class="submit-btn" id="btnAdminLogin">Se Connecter</button>
     </div>
 </div>
 
-<!-- Modal: Admin Panel -->
 <div class="modal" id="adminPanelModal">
     <div class="modal-content" style="max-width: 900px;">
         <div class="modal-header">
-            <h2 class="modal-title">⚙️ Gestion des Bornes</h2>
+            <h2 class="modal-title">⚙️ Gestion</h2>
             <button class="close-btn" id="btnCloseAdmin">×</button>
         </div>
-
         <div class="admin-section">
             <h3 class="admin-section-title">➕ Ajouter une Borne</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <div class="form-group">
-                    <label class="form-label">Nom</label>
-                    <input type="text" id="stationName" class="form-input" placeholder="Ex: Borne A1">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ID</label>
-                    <input type="text" id="stationId" class="form-input" placeholder="Ex: BRN-001">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Puissance (kW)</label>
-                    <input type="number" id="stationPower" class="form-input" placeholder="50" min="7" max="350">
-                </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px;">
+                <div class="form-group"><label class="form-label">Nom</label><input type="text" id="stationName" class="form-input" placeholder="Borne A1"></div>
+                <div class="form-group"><label class="form-label">ID</label><input type="text" id="stationId" class="form-input" placeholder="BRN-001"></div>
+                <div class="form-group"><label class="form-label">Puissance (kW)</label><input type="number" id="stationPower" class="form-input" placeholder="50"></div>
                 <div class="form-group">
                     <label class="form-label">Type</label>
                     <select id="stationType" class="form-select">
@@ -1300,149 +572,68 @@
                         <option value="Type 2">Type 2 (AC)</option>
                         <option value="CCS">CCS (DC)</option>
                         <option value="CHAdeMO">CHAdeMO</option>
-                        <option value="Tesla">Tesla Supercharger</option>
+                        <option value="Tesla">Tesla</option>
                     </select>
                 </div>
             </div>
-            <button class="submit-btn" id="btnAddStation" style="margin-top: 16px;">Ajouter la Borne</button>
+            <button class="submit-btn" id="btnAddStation" style="margin-top: 18px;">Ajouter</button>
         </div>
-
-        <h3 class="admin-section-title">🔌 Bornes Actuelles</h3>
+        <h3 class="admin-section-title">🔌 Bornes</h3>
         <div class="stations-list" id="adminStationsList"></div>
     </div>
 </div>
 
-<!-- Modal: Reservation -->
 <div class="modal" id="reservationModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 class="modal-title">🔋 Réserver une Borne</h2>
+            <h2 class="modal-title">🔋 Réserver</h2>
             <button class="close-btn" id="btnCloseReservation">×</button>
         </div>
-
-        <div class="form-group">
-            <label class="form-label">Plaque d'immatriculation</label>
-            <input type="text" id="vehiclePlate" class="form-input" placeholder="Ex: AB-123-CD" style="text-transform: uppercase;">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Date</label>
-            <input type="date" id="reservationDate" class="form-input">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Heure de début</label>
-            <div class="time-slots-grid" id="startTimeSlots"></div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Heure de fin</label>
-            <div class="time-slots-grid" id="endTimeSlots"></div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Pourcentage de charge souhaité</label>
-            <input type="number" id="chargeTarget" class="form-input" placeholder="80" min="20" max="100">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Notes (optionnel)</label>
-            <input type="text" id="notes" class="form-input" placeholder="Informations complémentaires">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Mot de passe de protection</label>
-            <input type="password" id="protectionPassword" class="form-input" placeholder="Créez un mot de passe sécurisé">
-        </div>
-
-        <button class="submit-btn" id="btnSubmitReservation">Confirmer la Réservation</button>
+        <div class="form-group"><label class="form-label">Plaque</label><input type="text" id="vehiclePlate" class="form-input" placeholder="AB-123-CD" style="text-transform: uppercase;"></div>
+        <div class="form-group"><label class="form-label">Date</label><input type="date" id="reservationDate" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Début</label><div class="time-slots-grid" id="startTimeSlots"></div></div>
+        <div class="form-group"><label class="form-label">Fin</label><div class="time-slots-grid" id="endTimeSlots"></div></div>
+        <div class="form-group"><label class="form-label">Charge (%)</label><input type="number" id="chargeTarget" class="form-input" placeholder="80" min="20" max="100"></div>
+        <div class="form-group"><label class="form-label">Notes</label><input type="text" id="notes" class="form-input" placeholder="Optionnel"></div>
+        <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" id="protectionPassword" class="form-input" placeholder="Créez un mot de passe"></div>
+        <button class="submit-btn" id="btnSubmitReservation">Confirmer</button>
     </div>
 </div>
 
-<!-- Modal: End Reservation -->
 <div class="modal" id="endReservationModal">
-    <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-content" style="max-width: 460px;">
         <div class="modal-header">
-            <h2 class="modal-title">🔓 Terminer la Recharge</h2>
+            <h2 class="modal-title">🔓 Terminer</h2>
             <button class="close-btn" id="btnCloseEnd">×</button>
         </div>
-
-        <div class="form-group">
-            <label class="form-label">Mot de passe de protection</label>
-            <input type="password" id="endPassword" class="form-input" placeholder="Entrez votre mot de passe">
-        </div>
-
-        <button class="submit-btn" id="btnSubmitEnd">Libérer la Borne</button>
+        <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" id="endPassword" class="form-input"></div>
+        <button class="submit-btn" id="btnSubmitEnd">Libérer</button>
     </div>
 </div>
 
-<!-- Modal: History -->
 <div class="modal" id="historyModal">
     <div class="modal-content" style="max-width: 1200px;">
         <div class="modal-header">
-            <h2 class="modal-title">📊 Historique des Réservations</h2>
+            <h2 class="modal-title">📊 Historique</h2>
             <button class="close-btn" id="btnCloseHistory">×</button>
         </div>
-
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="totalReservations">0</div>
-                <div class="stat-label">Total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="activeReservations">0</div>
-                <div class="stat-label">En Cours</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="completedReservations">0</div>
-                <div class="stat-label">Complétées</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="mostUsedStation">—</div>
-                <div class="stat-label">Plus utilisée</div>
-            </div>
+            <div class="stat-card"><div class="stat-value" id="totalReservations">0</div><div class="stat-label">Total</div></div>
+            <div class="stat-card"><div class="stat-value" id="activeReservations">0</div><div class="stat-label">En Cours</div></div>
+            <div class="stat-card"><div class="stat-value" id="completedReservations">0</div><div class="stat-label">Complétées</div></div>
+            <div class="stat-card"><div class="stat-value" id="mostUsedStation">—</div><div class="stat-label">Plus utilisée</div></div>
         </div>
-
         <div class="filters-section">
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Date début</label>
-                <input type="date" id="filterStartDate" class="form-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Date fin</label>
-                <input type="date" id="filterEndDate" class="form-input">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Borne</label>
-                <select id="filterStation" class="form-select">
-                    <option value="">Toutes</option>
-                </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label">Plaque</label>
-                <input type="text" id="filterPlate" class="form-input" placeholder="Rechercher...">
-            </div>
-            <button class="export-btn" id="btnExport">📥 Exporter Excel</button>
+            <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Date début</label><input type="date" id="filterStartDate" class="form-input"></div>
+            <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Date fin</label><input type="date" id="filterEndDate" class="form-input"></div>
+            <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Borne</label><select id="filterStation" class="form-select"><option value="">Toutes</option></select></div>
+            <div class="form-group" style="margin-bottom: 0;"><label class="form-label">Plaque</label><input type="text" id="filterPlate" class="form-input"></div>
+            <button class="export-btn" id="btnExport">📥 Exporter</button>
         </div>
-
         <div class="table-container">
             <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Borne</th>
-                        <th>Plaque</th>
-                        <th>Horaires</th>
-                        <th>Charge</th>
-                        <th>Notes</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody id="historyTableBody">
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">Chargement...</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>Date</th><th>Borne</th><th>Plaque</th><th>Horaires</th><th>Charge</th><th>Notes</th><th>Statut</th></tr></thead>
+                <tbody id="historyTableBody"><tr><td colspan="7" style="text-align: center; padding: 40px;">Chargement...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -1452,907 +643,413 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 
-const firebaseConfig = {
+const app = initializeApp({
     apiKey: "AIzaSyBmY8Usm76Ik9uz_N5KD635ECD-egqg4eg",
     authDomain: "stock-borne-reservation.firebaseapp.com",
     projectId: "stock-borne-reservation",
     storageBucket: "stock-borne-reservation.firebasestorage.app",
     messagingSenderId: "817066058466",
     appId: "1:817066058466:web:69620f93541da5a9c7f4bb"
-};
-
-const app = initializeApp(firebaseConfig);
+});
 const db = getFirestore(app);
 
-// Password hash for "AdminBorne"
-const ADMIN_HASH = "b5f8e0e3b0c1a4f2e8d7c6a5b4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5";
+const ADMIN_PASSWORD = "AdminBorne";
+let stations = [], currentReservations = [], allHistory = [];
+let selectedStation = null, selectedStartTime = null, selectedEndTime = null, selectedDate = null, currentEndReservation = null;
+const TIME_SLOTS = Array.from({length: 34}, (_, i) => {
+    const h = Math.floor(i/2) + 6;
+    const m = i % 2 === 0 ? '00' : '30';
+    return h < 23 ? `${String(h).padStart(2,'0')}:${m}` : null;
+}).filter(Boolean);
 
-let stations = [];
-let currentReservations = [];
-let allHistory = [];
-let selectedStation = null;
-let selectedStartTime = null;
-let selectedEndTime = null;
-let selectedDate = null;
-let currentEndReservation = null;
-
-const TIME_SLOTS = [];
-for (let h = 6; h <= 22; h++) {
-    TIME_SLOTS.push(`${String(h).padStart(2, '0')}:00`);
-    if (h < 22) TIME_SLOTS.push(`${String(h).padStart(2, '0')}:30`);
+async function hashPassword(pwd) {
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-// Hash password
-async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-}
-
-// Toast notification
 function showToast(type, title, message) {
-    const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
-    const icons = {
-        success: '✓',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
-    };
-    
-    toast.innerHTML = `
-        <div class="toast-icon">${icons[type]}</div>
-        <div class="toast-content">
-            <div class="toast-title">${title}</div>
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close">×</button>
-    `;
-    
-    container.appendChild(toast);
-    
-    const closeBtn = toast.querySelector('.toast-close');
-    closeBtn.addEventListener('click', () => removeToast(toast));
-    
-    setTimeout(() => removeToast(toast), 5000);
+    toast.innerHTML = `<div class="toast-icon">${{success:'✓',error:'✕',warning:'⚠'}[type]}</div>
+        <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>
+        <button class="toast-close">×</button>`;
+    document.getElementById('toastContainer').appendChild(toast);
+    toast.querySelector('.toast-close').onclick = () => { toast.classList.add('out'); setTimeout(() => toast.remove(), 400); };
+    setTimeout(() => { if(toast.parentNode) { toast.classList.add('out'); setTimeout(() => toast.remove(), 400); } }, 5000);
 }
 
-function removeToast(toast) {
-    if (!toast.parentNode) return;
-    toast.classList.add('out');
-    setTimeout(() => toast.remove(), 300);
+document.getElementById('themeToggle').onclick = () => {
+    const theme = document.documentElement.getAttribute('data-theme') === 'light' ? '' : 'light';
+    theme ? document.documentElement.setAttribute('data-theme', theme) : document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', theme);
+};
+if(localStorage.getItem('theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('theme'));
+
+function formatDate(d) {
+    return new Date(d).toLocaleDateString('fr-FR', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
 }
 
-// Theme toggle
-const themeToggle = document.getElementById('themeToggle');
-themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? '' : 'light';
-    
-    if (newTheme) {
-        document.documentElement.setAttribute('data-theme', newTheme);
-    } else {
-        document.documentElement.removeAttribute('data-theme');
-    }
-    
-    localStorage.setItem('theme', newTheme);
-});
-
-// Load saved theme
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-}
-
-// Format date
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-// Load stations
 async function loadStations() {
-    try {
-        const snapshot = await getDocs(collection(db, 'charging_stations'));
-        stations = [];
-        snapshot.forEach(doc => {
-            stations.push({ id: doc.id, ...doc.data() });
-        });
-        
-        if (stations.length === 0) {
-            await initDefaultStations();
-        }
-        
-        renderStations();
-    } catch (error) {
-        console.error('Error loading stations:', error);
-        showToast('error', 'Erreur', 'Impossible de charger les bornes.');
+    stations = [];
+    (await getDocs(collection(db, 'charging_stations'))).forEach(d => stations.push({id: d.id, ...d.data()}));
+    if(!stations.length) {
+        await Promise.all([
+            {name:'Borne A1', stationId:'BRN-001', power:50, type:'Type 2'},
+            {name:'Borne A2', stationId:'BRN-002', power:150, type:'CCS'},
+            {name:'Borne B1', stationId:'BRN-003', power:22, type:'Type 2'}
+        ].map(s => addDoc(collection(db, 'charging_stations'), s)));
+        await loadStations();
     }
+    renderStations();
 }
 
-// Initialize default stations
-async function initDefaultStations() {
-    const defaults = [
-        { name: 'Borne A1', stationId: 'BRN-001', power: 50, type: 'Type 2', icon: '⚡' },
-        { name: 'Borne A2', stationId: 'BRN-002', power: 150, type: 'CCS', icon: '⚡' },
-        { name: 'Borne B1', stationId: 'BRN-003', power: 22, type: 'Type 2', icon: '⚡' }
-    ];
-    
-    for (const station of defaults) {
-        await addDoc(collection(db, 'charging_stations'), station);
-    }
-    
-    await loadStations();
-}
-
-// Render stations
-function renderStations() {
-    const grid = document.getElementById('stationsGrid');
-    
-    grid.innerHTML = stations.map(station => {
-        const status = getStationStatus(station.id);
-        
-        return `
-            <div class="station-card" data-id="${station.id}">
-                <div class="station-header">
-                    <div class="station-info">
-                        <h3>${station.name}</h3>
-                        <div class="station-id">${station.stationId}</div>
-                    </div>
-                    <div class="station-status ${status}">${
-                        status === 'available' ? 'Disponible' :
-                        status === 'occupied' ? 'Occupée' : 'Hors ligne'
-                    }</div>
-                </div>
-                <div class="station-details">
-                    <div class="detail-item">
-                        <div class="detail-label">Puissance</div>
-                        <div class="detail-value">${station.power} kW</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-label">Type</div>
-                        <div class="detail-value">${station.type}</div>
-                    </div>
-                </div>
-                <button class="reserve-btn" ${status !== 'available' ? 'disabled' : ''}>
-                    ${status === 'available' ? 'Réserver' : 'Indisponible'}
-                </button>
-            </div>
-        `;
-    }).join('');
-    
-    grid.querySelectorAll('.station-card').forEach(card => {
-        const btn = card.querySelector('.reserve-btn');
-        if (!btn.disabled) {
-            card.addEventListener('click', () => openReservationModal(card.dataset.id));
-        }
-    });
-}
-
-// Get station status
-function getStationStatus(stationId) {
+function getStationStatus(id) {
     const now = new Date();
-    const activeReservation = currentReservations.find(res => {
-        if (res.stationId !== stationId) return false;
-        
-        const resDate = new Date(res.date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        resDate.setHours(0, 0, 0, 0);
-        
-        if (resDate.getTime() !== today.getTime()) return false;
-        
-        const [startHour, startMin] = res.startTime.split(':').map(Number);
-        const [endHour, endMin] = res.endTime.split(':').map(Number);
-        
-        const startTime = new Date();
-        startTime.setHours(startHour, startMin, 0, 0);
-        
-        const endTime = new Date();
-        endTime.setHours(endHour, endMin, 0, 0);
-        
-        return now >= startTime && now <= endTime;
-    });
-    
-    return activeReservation ? 'occupied' : 'available';
+    return currentReservations.some(r => {
+        if(r.stationId !== id) return false;
+        const rd = new Date(r.date), td = new Date();
+        rd.setHours(0,0,0,0); td.setHours(0,0,0,0);
+        if(rd.getTime() !== td.getTime()) return false;
+        const [sh,sm] = r.startTime.split(':').map(Number);
+        const [eh,em] = r.endTime.split(':').map(Number);
+        const st = new Date(), et = new Date();
+        st.setHours(sh,sm,0,0); et.setHours(eh,em,0,0);
+        return now >= st && now <= et;
+    }) ? 'occupied' : 'available';
 }
 
-// Open reservation modal
-function openReservationModal(stationId) {
-    selectedStation = stations.find(s => s.id === stationId);
-    selectedStartTime = null;
-    selectedEndTime = null;
-    
+function renderStations() {
+    document.getElementById('stationsGrid').innerHTML = stations.map(s => {
+        const status = getStationStatus(s.id);
+        return `<div class="station-card" data-id="${s.id}">
+            <div class="station-header">
+                <div class="station-info"><h3>${s.name}</h3><div class="station-id">${s.stationId}</div></div>
+                <div class="station-status ${status}">${status==='available'?'Disponible':'Occupée'}</div>
+            </div>
+            <div class="station-details">
+                <div class="detail-item"><div class="detail-label">Puissance</div><div class="detail-value">${s.power} kW</div></div>
+                <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value">${s.type}</div></div>
+            </div>
+            <button class="reserve-btn" ${status!=='available'?'disabled':''}>${status==='available'?'Réserver':'Indisponible'}</button>
+        </div>`;
+    }).join('');
+    document.querySelectorAll('.station-card').forEach(c => {
+        if(!c.querySelector('.reserve-btn').disabled) c.onclick = () => openReservationModal(c.dataset.id);
+    });
+}
+
+function openReservationModal(id) {
+    selectedStation = stations.find(s => s.id === id);
+    selectedStartTime = selectedEndTime = null;
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('reservationDate').value = today;
-    document.getElementById('reservationDate').min = today;
-    selectedDate = today;
-    
+    document.getElementById('reservationDate').value = document.getElementById('reservationDate').min = selectedDate = today;
     document.getElementById('reservationModal').classList.add('active');
     renderTimeSlots();
     updateTimeSlots();
 }
 
-// Close reservation modal
-document.getElementById('btnCloseReservation').addEventListener('click', () => {
-    document.getElementById('reservationModal').classList.remove('active');
-    clearReservationForm();
-});
-
-document.getElementById('reservationModal').addEventListener('click', (e) => {
-    if (e.target.id === 'reservationModal') {
-        document.getElementById('reservationModal').classList.remove('active');
-        clearReservationForm();
-    }
-});
-
-function clearReservationForm() {
-    document.getElementById('vehiclePlate').value = '';
-    document.getElementById('chargeTarget').value = '';
-    document.getElementById('notes').value = '';
-    document.getElementById('protectionPassword').value = '';
-    selectedStation = null;
-    selectedStartTime = null;
-    selectedEndTime = null;
-    selectedDate = null;
-}
-
-// Date change handler
-document.getElementById('reservationDate').addEventListener('change', (e) => {
-    selectedDate = e.target.value;
-    selectedStartTime = null;
-    selectedEndTime = null;
-    updateTimeSlots();
-});
-
-// Render time slots
 function renderTimeSlots() {
-    const startContainer = document.getElementById('startTimeSlots');
-    const endContainer = document.getElementById('endTimeSlots');
-    
-    startContainer.innerHTML = TIME_SLOTS.map(time => 
-        `<div class="time-slot" data-time="${time}">${time}</div>`
-    ).join('');
-    
-    endContainer.innerHTML = TIME_SLOTS.map(time => 
-        `<div class="time-slot" data-time="${time}">${time}</div>`
-    ).join('');
-    
-    startContainer.addEventListener('click', (e) => {
-        const slot = e.target.closest('.time-slot');
-        if (!slot || slot.classList.contains('occupied') || slot.classList.contains('disabled')) return;
-        selectStartTime(slot.dataset.time);
-    });
-    
-    endContainer.addEventListener('click', (e) => {
-        const slot = e.target.closest('.time-slot');
-        if (!slot || slot.classList.contains('occupied') || slot.classList.contains('disabled')) return;
-        selectEndTime(slot.dataset.time);
+    ['start','end'].forEach(t => {
+        const c = document.getElementById(t+'TimeSlots');
+        c.innerHTML = TIME_SLOTS.map(time => `<div class="time-slot" data-time="${time}">${time}</div>`).join('');
+        c.onclick = e => {
+            const slot = e.target.closest('.time-slot');
+            if(!slot || slot.classList.contains('occupied') || slot.classList.contains('disabled')) return;
+            t === 'start' ? selectStartTime(slot.dataset.time) : selectEndTime(slot.dataset.time);
+        };
     });
 }
 
-// Get occupied time slots
-function getOccupiedSlots(stationId, date) {
+function getOccupiedSlots(sid, date) {
     const slots = [];
-    
-    currentReservations
-        .filter(res => res.stationId === stationId && res.date === date)
-        .forEach(res => {
-            const startIndex = TIME_SLOTS.indexOf(res.startTime);
-            const endIndex = TIME_SLOTS.indexOf(res.endTime);
-            
-            for (let i = startIndex; i < endIndex; i++) {
-                slots.push(TIME_SLOTS[i]);
-            }
-        });
-    
+    currentReservations.filter(r => r.stationId === sid && r.date === date).forEach(r => {
+        const si = TIME_SLOTS.indexOf(r.startTime), ei = TIME_SLOTS.indexOf(r.endTime);
+        for(let i=si; i<ei; i++) slots.push(TIME_SLOTS[i]);
+    });
     return slots;
 }
 
-// Update time slots
 function updateTimeSlots() {
-    if (!selectedStation || !selectedDate) return;
-    
-    const occupied = getOccupiedSlots(selectedStation.id, selectedDate);
-    
-    document.querySelectorAll('#startTimeSlots .time-slot').forEach(slot => {
-        slot.classList.remove('occupied', 'disabled', 'selected');
-        if (occupied.includes(slot.dataset.time)) {
-            slot.classList.add('occupied');
-        }
+    if(!selectedStation || !selectedDate) return;
+    const occ = getOccupiedSlots(selectedStation.id, selectedDate);
+    document.querySelectorAll('#startTimeSlots .time-slot').forEach(s => {
+        s.classList.remove('occupied','disabled','selected');
+        if(occ.includes(s.dataset.time)) s.classList.add('occupied');
     });
-    
     updateEndTimeSlots();
 }
 
 function updateEndTimeSlots() {
-    if (!selectedStation || !selectedDate) return;
-    
-    const occupied = getOccupiedSlots(selectedStation.id, selectedDate);
-    
-    document.querySelectorAll('#endTimeSlots .time-slot').forEach(slot => {
-        slot.classList.remove('occupied', 'disabled', 'selected');
-        
-        if (!selectedStartTime) {
-            slot.classList.add('disabled');
-            return;
-        }
-        
-        const startIndex = TIME_SLOTS.indexOf(selectedStartTime);
-        const currentIndex = TIME_SLOTS.indexOf(slot.dataset.time);
-        
-        if (currentIndex <= startIndex) {
-            slot.classList.add('disabled');
-            return;
-        }
-        
-        // Check if any slot between start and current is occupied
-        for (let i = startIndex; i < currentIndex; i++) {
-            if (occupied.includes(TIME_SLOTS[i])) {
-                slot.classList.add('disabled');
-                return;
-            }
-        }
+    if(!selectedStation || !selectedDate) return;
+    const occ = getOccupiedSlots(selectedStation.id, selectedDate);
+    document.querySelectorAll('#endTimeSlots .time-slot').forEach(s => {
+        s.classList.remove('occupied','disabled','selected');
+        if(!selectedStartTime) { s.classList.add('disabled'); return; }
+        const si = TIME_SLOTS.indexOf(selectedStartTime), ci = TIME_SLOTS.indexOf(s.dataset.time);
+        if(ci <= si) { s.classList.add('disabled'); return; }
+        for(let i=si; i<ci; i++) if(occ.includes(TIME_SLOTS[i])) { s.classList.add('disabled'); return; }
     });
 }
 
-// Select start time
 function selectStartTime(time) {
-    selectedStartTime = time;
-    selectedEndTime = null;
-    
-    document.querySelectorAll('#startTimeSlots .time-slot').forEach(slot => {
-        slot.classList.remove('selected');
-    });
-    document.querySelectorAll('#endTimeSlots .time-slot').forEach(slot => {
-        slot.classList.remove('selected');
-    });
-    
+    selectedStartTime = time; selectedEndTime = null;
+    document.querySelectorAll('#startTimeSlots .time-slot, #endTimeSlots .time-slot').forEach(s => s.classList.remove('selected'));
     document.querySelector(`#startTimeSlots .time-slot[data-time="${time}"]`).classList.add('selected');
     updateEndTimeSlots();
 }
 
-// Select end time
 function selectEndTime(time) {
-    if (TIME_SLOTS.indexOf(time) <= TIME_SLOTS.indexOf(selectedStartTime)) {
-        showToast('warning', 'Erreur', 'L\'heure de fin doit être après l\'heure de début.');
+    if(TIME_SLOTS.indexOf(time) <= TIME_SLOTS.indexOf(selectedStartTime)) {
+        showToast('warning', 'Erreur', 'Heure de fin doit être après début');
         return;
     }
-    
     selectedEndTime = time;
-    
-    document.querySelectorAll('#endTimeSlots .time-slot').forEach(slot => {
-        slot.classList.remove('selected');
-    });
-    
+    document.querySelectorAll('#endTimeSlots .time-slot').forEach(s => s.classList.remove('selected'));
     document.querySelector(`#endTimeSlots .time-slot[data-time="${time}"]`).classList.add('selected');
 }
 
-// Submit reservation
-document.getElementById('btnSubmitReservation').addEventListener('click', async () => {
+document.getElementById('reservationDate').onchange = e => {
+    selectedDate = e.target.value;
+    selectedStartTime = selectedEndTime = null;
+    updateTimeSlots();
+};
+
+document.getElementById('btnCloseReservation').onclick = () => {
+    document.getElementById('reservationModal').classList.remove('active');
+    ['vehiclePlate','chargeTarget','notes','protectionPassword'].forEach(id => document.getElementById(id).value = '');
+    selectedStation = selectedStartTime = selectedEndTime = selectedDate = null;
+};
+
+document.getElementById('btnSubmitReservation').onclick = async () => {
     const plate = document.getElementById('vehiclePlate').value.trim().toUpperCase();
-    const chargeTarget = document.getElementById('chargeTarget').value;
+    const charge = document.getElementById('chargeTarget').value;
     const notes = document.getElementById('notes').value.trim();
-    const password = document.getElementById('protectionPassword').value;
+    const pwd = document.getElementById('protectionPassword').value;
     
-    if (!plate) {
-        showToast('warning', 'Champ requis', 'Entrez la plaque d\'immatriculation.');
-        return;
-    }
-    
-    if (!selectedStartTime || !selectedEndTime) {
-        showToast('warning', 'Horaires manquants', 'Sélectionnez les heures de début et de fin.');
-        return;
-    }
-    
-    if (!chargeTarget || chargeTarget < 20 || chargeTarget > 100) {
-        showToast('warning', 'Charge invalide', 'Entrez un pourcentage entre 20 et 100.');
-        return;
-    }
-    
-    if (!password) {
-        showToast('warning', 'Mot de passe requis', 'Créez un mot de passe de protection.');
-        return;
-    }
-    
-    const reservation = {
-        stationId: selectedStation.id,
-        stationName: selectedStation.name,
-        stationIdCode: selectedStation.stationId,
-        vehiclePlate: plate,
-        date: selectedDate,
-        startTime: selectedStartTime,
-        endTime: selectedEndTime,
-        chargeTarget: parseInt(chargeTarget),
-        notes: notes,
-        passwordHash: await hashPassword(password),
-        createdAt: new Date().toISOString(),
-        status: 'active'
-    };
+    if(!plate) return showToast('warning','Requis','Entrez la plaque');
+    if(!selectedStartTime || !selectedEndTime) return showToast('warning','Requis','Sélectionnez horaires');
+    if(!charge || charge<20 || charge>100) return showToast('warning','Invalide','Charge entre 20-100%');
+    if(!pwd) return showToast('warning','Requis','Créez un mot de passe');
     
     try {
-        await addDoc(collection(db, 'reservations'), reservation);
+        await addDoc(collection(db, 'reservations'), {
+            stationId: selectedStation.id,
+            stationName: selectedStation.name,
+            stationIdCode: selectedStation.stationId,
+            vehiclePlate: plate,
+            date: selectedDate,
+            startTime: selectedStartTime,
+            endTime: selectedEndTime,
+            chargeTarget: parseInt(charge),
+            notes,
+            passwordHash: await hashPassword(pwd),
+            createdAt: new Date().toISOString(),
+            status: 'active'
+        });
         document.getElementById('reservationModal').classList.remove('active');
-        clearReservationForm();
         await loadReservations();
         await loadStations();
-        showToast('success', 'Réservation confirmée ✅', 
-            `${selectedStation.name} réservée de ${selectedStartTime} à ${selectedEndTime}`);
-    } catch (error) {
-        console.error('Error creating reservation:', error);
-        showToast('error', 'Erreur', 'Impossible de créer la réservation.');
+        showToast('success', 'Confirmée ✅', `${selectedStation.name} de ${selectedStartTime} à ${selectedEndTime}`);
+    } catch(e) {
+        showToast('error', 'Erreur', 'Impossible de réserver');
     }
-});
+};
 
-// Load reservations
 async function loadReservations() {
-    try {
-        const q = query(collection(db, 'reservations'), orderBy('date', 'desc'));
-        const snapshot = await getDocs(q);
-        currentReservations = [];
-        
-        snapshot.forEach(doc => {
-            currentReservations.push({ id: doc.id, ...doc.data() });
-        });
-        
-        currentReservations = currentReservations.filter(res => res.status === 'active');
-        currentReservations.sort((a, b) => {
-            if (a.date !== b.date) return b.date.localeCompare(a.date);
-            return b.startTime.localeCompare(a.startTime);
-        });
-        
-        renderReservations();
-    } catch (error) {
-        console.error('Error loading reservations:', error);
-        document.getElementById('reservationsContainer').innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">⚠</div>
-                <p class="empty-state-text">Erreur de chargement</p>
-            </div>
-        `;
-    }
+    currentReservations = [];
+    (await getDocs(query(collection(db, 'reservations'), orderBy('date','desc')))).forEach(d => 
+        currentReservations.push({id: d.id, ...d.data()}));
+    currentReservations = currentReservations.filter(r => r.status === 'active');
+    currentReservations.sort((a,b) => a.date !== b.date ? b.date.localeCompare(a.date) : b.startTime.localeCompare(a.startTime));
+    renderReservations();
 }
 
-// Render reservations
 function renderReservations() {
-    const container = document.getElementById('reservationsContainer');
-    
-    if (currentReservations.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📭</div>
-                <p class="empty-state-text">Aucune réservation active</p>
-            </div>
-        `;
+    const c = document.getElementById('reservationsContainer');
+    if(!currentReservations.length) {
+        c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p class="empty-state-text">Aucune réservation active</p></div>';
         return;
     }
-    
-    container.innerHTML = currentReservations.map(res => `
+    c.innerHTML = currentReservations.map(r => `
         <div class="reservation-card">
             <div class="reservation-header">
                 <div class="reservation-station-info">
-                    <div class="station-icon">⚡</div>
-                    <div class="station-details">
-                        <h3>${res.stationName}</h3>
-                        <span class="vehicle-plate">${res.vehiclePlate}</span>
-                    </div>
+                    <div class="station-icon">🔌</div>
+                    <div class="station-details"><h3>${r.stationName}</h3><span class="vehicle-plate">${r.vehiclePlate}</span></div>
                 </div>
                 <div class="reservation-status-badge">En Charge</div>
             </div>
             <div class="reservation-body">
-                <div class="reservation-info-block">
-                    <h4>Date</h4>
-                    <p>${formatDate(res.date)}</p>
-                </div>
-                <div class="reservation-info-block">
-                    <h4>Horaires</h4>
-                    <div class="time-range">
-                        <span>${res.startTime}</span>
-                        <span class="time-arrow">→</span>
-                        <span>${res.endTime}</span>
-                    </div>
-                </div>
-                <div class="reservation-info-block">
-                    <h4>Charge Cible</h4>
-                    <p>${res.chargeTarget}%</p>
-                </div>
-                ${res.notes ? `
-                    <div class="reservation-info-block">
-                        <h4>Notes</h4>
-                        <p>${res.notes}</p>
-                    </div>
-                ` : ''}
+                <div class="reservation-info-block"><h4>Date</h4><p>${formatDate(r.date)}</p></div>
+                <div class="reservation-info-block"><h4>Horaires</h4><div class="time-range"><span>${r.startTime}</span><span class="time-arrow">→</span><span>${r.endTime}</span></div></div>
+                <div class="reservation-info-block"><h4>Charge</h4><p>${r.chargeTarget}%</p></div>
+                ${r.notes?`<div class="reservation-info-block"><h4>Notes</h4><p>${r.notes}</p></div>`:''}
             </div>
-            <div class="reservation-actions">
-                <button class="end-btn" data-id="${res.id}">🔓 Terminer & Libérer</button>
-            </div>
+            <div class="reservation-actions"><button class="end-btn" data-id="${r.id}">🔓 Terminer</button></div>
         </div>
     `).join('');
-    
-    container.querySelectorAll('.end-btn').forEach(btn => {
-        btn.addEventListener('click', () => openEndModal(btn.dataset.id));
+    c.querySelectorAll('.end-btn').forEach(b => b.onclick = () => {
+        currentEndReservation = currentReservations.find(r => r.id === b.dataset.id);
+        document.getElementById('endPassword').value = '';
+        document.getElementById('endReservationModal').classList.add('active');
     });
 }
 
-// Open end reservation modal
-function openEndModal(resId) {
-    currentEndReservation = currentReservations.find(r => r.id === resId);
-    document.getElementById('endPassword').value = '';
-    document.getElementById('endReservationModal').classList.add('active');
-}
-
-// Close end modal
-document.getElementById('btnCloseEnd').addEventListener('click', () => {
+document.getElementById('btnCloseEnd').onclick = () => {
     document.getElementById('endReservationModal').classList.remove('active');
     currentEndReservation = null;
-});
+};
 
-document.getElementById('endReservationModal').addEventListener('click', (e) => {
-    if (e.target.id === 'endReservationModal') {
-        document.getElementById('endReservationModal').classList.remove('active');
-        currentEndReservation = null;
-    }
-});
-
-// Submit end reservation
-document.getElementById('btnSubmitEnd').addEventListener('click', async () => {
-    const password = document.getElementById('endPassword').value;
-    
-    if (await hashPassword(password) !== currentEndReservation.passwordHash) {
-        showToast('error', 'Erreur', 'Mot de passe incorrect.');
-        return;
-    }
-    
+document.getElementById('btnSubmitEnd').onclick = async () => {
+    const pwd = document.getElementById('endPassword').value;
+    if(await hashPassword(pwd) !== currentEndReservation.passwordHash) return showToast('error','Erreur','Mot de passe incorrect');
     try {
-        const completed = {
-            ...currentEndReservation,
-            status: 'completed',
-            completedAt: new Date().toISOString()
-        };
-        
         await deleteDoc(doc(db, 'reservations', currentEndReservation.id));
-        await addDoc(collection(db, 'reservations'), completed);
-        
+        await addDoc(collection(db, 'reservations'), {...currentEndReservation, status:'completed', completedAt:new Date().toISOString()});
         document.getElementById('endReservationModal').classList.remove('active');
-        currentEndReservation = null;
-        
         await loadReservations();
         await loadStations();
-        
-        showToast('success', 'Recharge terminée', 'La borne est maintenant disponible.');
-    } catch (error) {
-        console.error('Error ending reservation:', error);
-        showToast('error', 'Erreur', 'Impossible de terminer la réservation.');
+        showToast('success', 'Terminée', 'Borne disponible');
+    } catch(e) {
+        showToast('error', 'Erreur', 'Impossible de terminer');
     }
-});
+};
 
-// Admin login
-document.getElementById('btnAdmin').addEventListener('click', () => {
+document.getElementById('btnAdmin').onclick = () => {
     document.getElementById('adminLoginModal').classList.add('active');
     document.getElementById('adminPassword').focus();
-});
+};
 
-document.getElementById('btnAdminLogin').addEventListener('click', async () => {
-    const password = document.getElementById('adminPassword').value;
-    
-    if (await hashPassword(password) !== ADMIN_HASH) {
-        showToast('error', 'Accès refusé', 'Mot de passe incorrect.');
-        return;
-    }
-    
+document.getElementById('btnAdminLogin').onclick = () => {
+    if(document.getElementById('adminPassword').value !== ADMIN_PASSWORD) return showToast('error','Refusé','Mot de passe incorrect');
     document.getElementById('adminLoginModal').classList.remove('active');
     document.getElementById('adminPassword').value = '';
     document.getElementById('adminPanelModal').classList.add('active');
-    
     renderAdminStations();
-    showToast('success', 'Accès autorisé', 'Bienvenue dans le panneau d\'administration.');
-});
+    showToast('success','Autorisé','Bienvenue');
+};
 
-document.getElementById('adminLoginModal').addEventListener('click', (e) => {
-    if (e.target.id === 'adminLoginModal') {
-        document.getElementById('adminLoginModal').classList.remove('active');
-        document.getElementById('adminPassword').value = '';
-    }
-});
+document.getElementById('btnCloseAdmin').onclick = () => document.getElementById('adminPanelModal').classList.remove('active');
 
-// Close admin panel
-document.getElementById('btnCloseAdmin').addEventListener('click', () => {
-    document.getElementById('adminPanelModal').classList.remove('active');
-});
-
-// Render admin stations
 function renderAdminStations() {
-    const list = document.getElementById('adminStationsList');
-    
-    list.innerHTML = stations.map(station => `
+    document.getElementById('adminStationsList').innerHTML = stations.map(s => `
         <div class="station-card">
-            <div class="station-header">
-                <div class="station-info">
-                    <h3>${station.name}</h3>
-                    <div class="station-id">${station.stationId}</div>
-                </div>
-            </div>
+            <div class="station-header"><div class="station-info"><h3>${s.name}</h3><div class="station-id">${s.stationId}</div></div></div>
             <div class="station-details">
-                <div class="detail-item">
-                    <div class="detail-label">Puissance</div>
-                    <div class="detail-value">${station.power} kW</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">Type</div>
-                    <div class="detail-value">${station.type}</div>
-                </div>
+                <div class="detail-item"><div class="detail-label">Puissance</div><div class="detail-value">${s.power} kW</div></div>
+                <div class="detail-item"><div class="detail-label">Type</div><div class="detail-value">${s.type}</div></div>
             </div>
-            <button class="delete-btn" data-id="${station.id}">Supprimer</button>
+            <button class="delete-btn" data-id="${s.id}">Supprimer</button>
         </div>
     `).join('');
-    
-    list.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteStation(btn.dataset.id));
+    document.querySelectorAll('.delete-btn').forEach(b => b.onclick = async () => {
+        if(!confirm('Supprimer?')) return;
+        await deleteDoc(doc(db, 'charging_stations', b.dataset.id));
+        await loadStations();
+        renderAdminStations();
+        showToast('success','Supprimée','Borne supprimée');
     });
 }
 
-// Add station
-document.getElementById('btnAddStation').addEventListener('click', async () => {
+document.getElementById('btnAddStation').onclick = async () => {
     const name = document.getElementById('stationName').value.trim();
-    const stationId = document.getElementById('stationId').value.trim().toUpperCase();
+    const sid = document.getElementById('stationId').value.trim().toUpperCase();
     const power = document.getElementById('stationPower').value;
     const type = document.getElementById('stationType').value;
-    
-    if (!name || !stationId || !power || !type) {
-        showToast('warning', 'Champs manquants', 'Remplissez tous les champs.');
-        return;
-    }
-    
-    try {
-        await addDoc(collection(db, 'charging_stations'), {
-            name,
-            stationId,
-            power: parseInt(power),
-            type,
-            icon: '⚡'
-        });
-        
-        document.getElementById('stationName').value = '';
-        document.getElementById('stationId').value = '';
-        document.getElementById('stationPower').value = '';
-        document.getElementById('stationType').value = '';
-        
-        await loadStations();
-        renderAdminStations();
-        
-        showToast('success', 'Borne ajoutée', `${name} a été enregistrée.`);
-    } catch (error) {
-        console.error('Error adding station:', error);
-        showToast('error', 'Erreur', 'Impossible d\'ajouter la borne.');
-    }
-});
+    if(!name || !sid || !power || !type) return showToast('warning','Manquant','Remplissez tous les champs');
+    await addDoc(collection(db, 'charging_stations'), {name, stationId:sid, power:parseInt(power), type});
+    ['stationName','stationId','stationPower','stationType'].forEach(id => document.getElementById(id).value = '');
+    await loadStations();
+    renderAdminStations();
+    showToast('success','Ajoutée',`${name} enregistrée`);
+};
 
-// Delete station
-async function deleteStation(id) {
-    if (!confirm('Supprimer cette borne ?')) return;
-    
-    try {
-        await deleteDoc(doc(db, 'charging_stations', id));
-        await loadStations();
-        renderAdminStations();
-        showToast('success', 'Supprimée', 'La borne a été supprimée.');
-    } catch (error) {
-        console.error('Error deleting station:', error);
-        showToast('error', 'Erreur', 'Impossible de supprimer.');
-    }
-}
-
-// History
-document.getElementById('btnHistory').addEventListener('click', async () => {
+document.getElementById('btnHistory').onclick = async () => {
     document.getElementById('historyModal').classList.add('active');
-    await loadHistory();
-});
-
-document.getElementById('btnCloseHistory').addEventListener('click', () => {
-    document.getElementById('historyModal').classList.remove('active');
-});
-
-document.getElementById('historyModal').addEventListener('click', (e) => {
-    if (e.target.id === 'historyModal') {
-        document.getElementById('historyModal').classList.remove('active');
-    }
-});
-
-// Load history
-async function loadHistory() {
-    try {
-        const q = query(collection(db, 'reservations'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        allHistory = [];
-        
-        snapshot.forEach(doc => {
-            allHistory.push({ id: doc.id, ...doc.data() });
-        });
-        
-        allHistory.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        updateStatistics();
-        populateStationFilter();
-        applyFilters();
-    } catch (error) {
-        console.error('Error loading history:', error);
-        document.getElementById('historyTableBody').innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">Erreur</td>
-            </tr>
-        `;
-    }
-}
-
-// Update statistics
-function updateStatistics() {
+    allHistory = [];
+    (await getDocs(query(collection(db, 'reservations'), orderBy('createdAt','desc')))).forEach(d => allHistory.push({id:d.id,...d.data()}));
+    
     const total = allHistory.length;
     const active = allHistory.filter(r => r.status === 'active').length;
     const completed = allHistory.filter(r => r.status === 'completed').length;
-    
     const counts = {};
-    allHistory.forEach(h => {
-        counts[h.stationName] = (counts[h.stationName] || 0) + 1;
-    });
-    
-    let mostUsed = '—';
-    let maxCount = 0;
-    Object.entries(counts).forEach(([name, count]) => {
-        if (count > maxCount) {
-            maxCount = count;
-            mostUsed = name;
-        }
-    });
+    allHistory.forEach(h => counts[h.stationName] = (counts[h.stationName] || 0) + 1);
+    let mostUsed = '—', maxCount = 0;
+    Object.entries(counts).forEach(([n,c]) => { if(c>maxCount) { maxCount=c; mostUsed=n; } });
     
     document.getElementById('totalReservations').textContent = total;
     document.getElementById('activeReservations').textContent = active;
     document.getElementById('completedReservations').textContent = completed;
     document.getElementById('mostUsedStation').textContent = mostUsed;
-}
-
-// Populate station filter
-function populateStationFilter() {
-    const select = document.getElementById('filterStation');
-    const uniqueStations = [...new Set(allHistory.map(h => h.stationName))];
     
-    select.innerHTML = '<option value="">Toutes</option>' +
-        uniqueStations.map(name => `<option value="${name}">${name}</option>`).join('');
-}
+    document.getElementById('filterStation').innerHTML = '<option value="">Toutes</option>' + 
+        [...new Set(allHistory.map(h => h.stationName))].map(n => `<option value="${n}">${n}</option>`).join('');
+    
+    applyFilters();
+};
 
-// Apply filters
 function applyFilters() {
-    const startDate = document.getElementById('filterStartDate').value;
-    const endDate = document.getElementById('filterEndDate').value;
-    const station = document.getElementById('filterStation').value;
-    const plate = document.getElementById('filterPlate').value.toLowerCase();
+    const sd = document.getElementById('filterStartDate').value;
+    const ed = document.getElementById('filterEndDate').value;
+    const st = document.getElementById('filterStation').value;
+    const pl = document.getElementById('filterPlate').value.toLowerCase();
     
     const filtered = allHistory.filter(h => {
-        if (startDate && h.date < startDate) return false;
-        if (endDate && h.date > endDate) return false;
-        if (station && h.stationName !== station) return false;
-        if (plate && !h.vehiclePlate.toLowerCase().includes(plate)) return false;
+        if(sd && h.date < sd) return false;
+        if(ed && h.date > ed) return false;
+        if(st && h.stationName !== st) return false;
+        if(pl && !h.vehiclePlate.toLowerCase().includes(pl)) return false;
         return true;
     });
     
-    renderHistoryTable(filtered);
+    document.getElementById('historyTableBody').innerHTML = filtered.length ? filtered.map(h => `
+        <tr>
+            <td>${formatDate(h.date)}</td>
+            <td>${h.stationName}</td>
+            <td><span class="vehicle-plate">${h.vehiclePlate}</span></td>
+            <td>${h.startTime} → ${h.endTime}</td>
+            <td>${h.chargeTarget}%</td>
+            <td>${h.notes || '—'}</td>
+            <td><span class="status-badge ${h.status==='completed'?'status-completed':'status-active'}">${h.status==='completed'?'Complétée':'Active'}</span></td>
+        </tr>
+    `).join('') : '<tr><td colspan="7" style="text-align:center;padding:40px;">Aucune réservation</td></tr>';
 }
 
-// Filter event listeners
-['filterStartDate', 'filterEndDate', 'filterStation', 'filterPlate'].forEach(id => {
-    document.getElementById(id).addEventListener('input', applyFilters);
-    document.getElementById(id).addEventListener('change', applyFilters);
+['filterStartDate','filterEndDate','filterStation','filterPlate'].forEach(id => {
+    document.getElementById(id).oninput = document.getElementById(id).onchange = applyFilters;
 });
 
-// Render history table
-function renderHistoryTable(logs) {
-    const tbody = document.getElementById('historyTableBody');
-    
-    if (!logs.length) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                    Aucune réservation trouvée
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = logs.map(log => `
-        <tr>
-            <td>${formatDate(log.date)}</td>
-            <td>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.5rem;">⚡</span>
-                    <div>
-                        <div style="font-weight: 600;">${log.stationName}</div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${log.stationIdCode}</div>
-                    </div>
-                </div>
-            </td>
-            <td><span class="vehicle-plate">${log.vehiclePlate}</span></td>
-            <td>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    ${log.startTime}
-                    <span style="color: var(--primary);">→</span>
-                    ${log.endTime}
-                </div>
-            </td>
-            <td>${log.chargeTarget}%</td>
-            <td>${log.notes || '—'}</td>
-            <td>
-                <span class="status-badge ${log.status === 'completed' ? 'status-completed' : 'status-active'}">
-                    ${log.status === 'completed' ? 'Complétée' : 'En Cours'}
-                </span>
-            </td>
-        </tr>
-    `).join('');
-}
+document.getElementById('btnCloseHistory').onclick = () => document.getElementById('historyModal').classList.remove('active');
 
-// Export to Excel (CSV)
-document.getElementById('btnExport').addEventListener('click', () => {
-    const startDate = document.getElementById('filterStartDate').value;
-    const endDate = document.getElementById('filterEndDate').value;
-    const station = document.getElementById('filterStation').value;
-    const plate = document.getElementById('filterPlate').value.toLowerCase();
-    
+document.getElementById('btnExport').onclick = () => {
     const filtered = allHistory.filter(h => {
-        if (startDate && h.date < startDate) return false;
-        if (endDate && h.date > endDate) return false;
-        if (station && h.stationName !== station) return false;
-        if (plate && !h.vehiclePlate.toLowerCase().includes(plate)) return false;
+        const sd = document.getElementById('filterStartDate').value;
+        const ed = document.getElementById('filterEndDate').value;
+        const st = document.getElementById('filterStation').value;
+        const pl = document.getElementById('filterPlate').value.toLowerCase();
+        if(sd && h.date < sd) return false;
+        if(ed && h.date > ed) return false;
+        if(st && h.stationName !== st) return false;
+        if(pl && !h.vehiclePlate.toLowerCase().includes(pl)) return false;
         return true;
     });
+    if(!filtered.length) return showToast('warning','Vide','Aucune donnée');
     
-    if (!filtered.length) {
-        showToast('warning', 'Aucune donnée', 'Aucune réservation à exporter.');
-        return;
-    }
+    let csv = '\uFEFFDate;Borne;Plaque;Debut;Fin;Charge;Notes;Statut\n';
+    filtered.forEach(h => csv += `"${formatDate(h.date)}";"${h.stationName}";"${h.vehiclePlate}";"${h.startTime}";"${h.endTime}";"${h.chargeTarget}%";"${h.notes||'-'}";"${h.status==='completed'?'Complétée':'Active'}"\n`);
     
-    const headers = ['Date', 'Borne', 'ID Borne', 'Plaque', 'Début', 'Fin', 'Charge', 'Notes', 'Statut'];
-    let csv = '\uFEFF' + headers.join(';') + '\n';
-    
-    filtered.forEach(log => {
-        csv += [
-            formatDate(log.date),
-            log.stationName,
-            log.stationIdCode,
-            log.vehiclePlate,
-            log.startTime,
-            log.endTime,
-            log.chargeTarget + '%',
-            log.notes || '-',
-            log.status === 'completed' ? 'Complétée' : 'En Cours'
-        ].map(c => `"${c}"`).join(';') + '\n';
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `historique_bornes_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
+    link.download = `historique_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    document.body.removeChild(link);
-    
-    showToast('success', 'Export réussi', `${filtered.length} réservation(s) exportée(s).`);
-});
+    showToast('success','Exporté',`${filtered.length} réservation(s)`);
+};
 
-// Initialize
 loadStations();
 loadReservations();
 setInterval(loadReservations, 30000);
 setInterval(loadStations, 30000);
 </script>
-
 </body>
 </html>
