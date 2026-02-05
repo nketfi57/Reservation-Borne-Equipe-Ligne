@@ -411,6 +411,11 @@
             50% { opacity: 0.7; }
         }
         
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
         /* Reservations */
         .reservations-container { display: grid; gap: 24px; }
         
@@ -943,6 +948,133 @@
         </div>
         <div class="form-group"><label class="form-label">Mot de passe de confirmation</label><input type="password" id="endPassword" class="form-input"></div>
         <button class="submit-btn" id="btnSubmitEnd">Libérer la Borne</button>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal" id="historyModal">
+    <div class="modal-content" style="max-width: 1300px;">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                    <polyline points="17 6 23 6 23 12"/>
+                </svg>
+                Historique & Statistiques
+            </h2>
+            <button class="close-btn" id="btnCloseHistory">×</button>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid var(--primary); border-radius: 16px; padding: 28px 24px; text-align: center; transition: all 0.4s ease; cursor: pointer;">
+                <div style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;" id="totalReservations">0</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Total Réservations</div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); border: 1px solid var(--success); border-radius: 16px; padding: 28px 24px; text-align: center; transition: all 0.4s ease; cursor: pointer;">
+                <div style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--success), #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;" id="completedReservations">0</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Complétées</div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1)); border: 1px solid var(--warning); border-radius: 16px; padding: 28px 24px; text-align: center; transition: all 0.4s ease; cursor: pointer;">
+                <div style="font-size: 3rem; font-weight: 900; background: linear-gradient(135deg, var(--warning), #d97706); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;" id="activeReservations">0</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">En Cours</div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid var(--primary); border-radius: 16px; padding: 28px 24px; text-align: center; transition: all 0.4s ease; cursor: pointer;">
+                <div style="font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; padding: 12px 0;" id="mostUsedStation">—</div>
+                <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Plus Utilisée</div>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px; padding: 32px; margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px; stroke: var(--primary);">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--primary); margin: 0;">Filtres Avancés</h3>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; align-items: end;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Date de début
+                    </label>
+                    <input type="date" id="filterStartDate" class="form-input">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Date de fin
+                    </label>
+                    <input type="date" id="filterEndDate" class="form-input">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <path d="M17 11l-5-5-5 5"/><path d="M12 6v13"/><path d="M19 21H5"/><circle cx="12" cy="19" r="2"/>
+                        </svg>
+                        Borne
+                    </label>
+                    <select id="filterStation" class="form-select">
+                        <option value="">Toutes les bornes</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 6px;">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        Plaque
+                    </label>
+                    <input type="text" id="filterPlate" class="form-input" placeholder="Rechercher...">
+                </div>
+                
+                <button id="btnExport" style="padding: 16px 28px; background: linear-gradient(135deg, var(--success), #059669); border: none; border-radius: 12px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.4s ease; display: flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Exporter CSV
+                </button>
+            </div>
+        </div>
+        
+        <!-- Results Table -->
+        <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--bg-tertiary);">
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Date</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Borne</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Plaque</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Horaires</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Charge</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: left; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Notes</th>
+                        <th style="color: var(--text-secondary); padding: 20px 24px; text-align: center; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; border-bottom: 1px solid var(--border); letter-spacing: 0.05em;">Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.3;">
+                                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                            </svg>
+                            <div style="font-size: 1.1rem; font-weight: 600;">Chargement des données...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -1516,8 +1648,180 @@ document.getElementById('btnAddStation').onclick = async () => {
     showToast('success', 'Borne ajoutée', `${name} a été enregistrée avec succès`);
 };
 
-document.getElementById('btnHistory').onclick = () => {
-    showToast('warning', 'Fonctionnalité', 'Historique disponible prochainement');
+document.getElementById('btnHistory').onclick = async () => {
+    document.getElementById('historyModal').classList.add('active');
+    
+    let allHistory = [];
+    const snapshot = await getDocs(query(collection(db, 'reservations'), orderBy('createdAt', 'desc')));
+    snapshot.forEach(doc => allHistory.push({id: doc.id, ...doc.data()}));
+    
+    const total = allHistory.length;
+    const active = allHistory.filter(r => r.status === 'active').length;
+    const completed = allHistory.filter(r => r.status === 'completed').length;
+    
+    const counts = {};
+    allHistory.forEach(h => counts[h.stationName] = (counts[h.stationName] || 0) + 1);
+    let mostUsed = '—';
+    let maxCount = 0;
+    Object.entries(counts).forEach(([name, count]) => {
+        if(count > maxCount) {
+            maxCount = count;
+            mostUsed = name;
+        }
+    });
+    
+    document.getElementById('totalReservations').textContent = total;
+    document.getElementById('activeReservations').textContent = active;
+    document.getElementById('completedReservations').textContent = completed;
+    document.getElementById('mostUsedStation').textContent = mostUsed;
+    
+    document.getElementById('filterStation').innerHTML = '<option value="">Toutes</option>' + 
+        [...new Set(allHistory.map(h => h.stationName))].map(n => `<option value="${n}">${n}</option>`).join('');
+    
+    renderHistoryTable(allHistory);
+};
+
+function renderHistoryTable(history) {
+    const tbody = document.getElementById('historyTableBody');
+    
+    if(!history.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 64px; height: 64px; margin: 0 auto 20px; opacity: 0.2;">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px;">Aucune réservation trouvée</div>
+                    <div style="font-size: 0.9rem; opacity: 0.7;">Essayez de modifier vos filtres</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = history.map((h, index) => {
+        const isCompleted = h.status === 'completed';
+        return `
+            <tr style="transition: all 0.3s ease; animation: fadeInRow 0.5s ease ${index * 0.05}s both; cursor: pointer;" onmouseover="this.style.background='var(--card-bg)'; this.style.transform='scale(1.01)';" onmouseout="this.style.background=''; this.style.transform='';">
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); font-size: 0.9rem; font-weight: 500;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; stroke: var(--primary); flex-shrink: 0;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        ${formatDate(h.date)}
+                    </div>
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); font-size: 0.9rem; font-weight: 600; color: var(--primary);">
+                    ${h.stationName}
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; color: var(--text-secondary); background: var(--bg-tertiary); padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); display: inline-block;">
+                        ${h.vehiclePlate}
+                    </span>
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>${h.startTime}</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; stroke: var(--primary);">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                        <span>${h.endTime}</span>
+                    </div>
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.95rem;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 40px; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden;">
+                            <div style="width: ${h.chargeTarget}%; height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); border-radius: 3px; transition: width 0.5s ease;"></div>
+                        </div>
+                        ${h.chargeTarget}%
+                    </div>
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); font-size: 0.88rem; color: var(--text-secondary); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${h.notes || ''}">
+                    ${h.notes || '<span style="opacity: 0.5;">—</span>'}
+                </td>
+                <td style="padding: 20px 24px; border-bottom: 1px solid var(--border); text-align: center;">
+                    <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; ${isCompleted ? 'background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success); color: var(--success);' : 'background: rgba(99, 102, 241, 0.15); border: 1px solid var(--primary); color: var(--primary);'}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 12px; height: 12px;">
+                            ${isCompleted ? '<polyline points="20 6 9 17 4 12"/>' : '<circle cx="12" cy="12" r="10"/>'}
+                        </svg>
+                        ${isCompleted ? 'Complétée' : 'Active'}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function applyHistoryFilters() {
+    const startDate = document.getElementById('filterStartDate').value;
+    const endDate = document.getElementById('filterEndDate').value;
+    const station = document.getElementById('filterStation').value;
+    const plate = document.getElementById('filterPlate').value.toLowerCase();
+    
+    let allHistory = [];
+    const snapshot = await getDocs(query(collection(db, 'reservations'), orderBy('createdAt', 'desc')));
+    snapshot.forEach(doc => allHistory.push({id: doc.id, ...doc.data()}));
+    
+    const filtered = allHistory.filter(h => {
+        if(startDate && h.date < startDate) return false;
+        if(endDate && h.date > endDate) return false;
+        if(station && h.stationName !== station) return false;
+        if(plate && !h.vehiclePlate.toLowerCase().includes(plate)) return false;
+        return true;
+    });
+    
+    renderHistoryTable(filtered);
+}
+
+['filterStartDate', 'filterEndDate', 'filterStation', 'filterPlate'].forEach(id => {
+    const elem = document.getElementById(id);
+    if(elem) {
+        elem.oninput = elem.onchange = applyHistoryFilters;
+    }
+});
+
+document.getElementById('btnCloseHistory').onclick = () => {
+    document.getElementById('historyModal').classList.remove('active');
+};
+
+document.getElementById('btnExport').onclick = async () => {
+    const startDate = document.getElementById('filterStartDate').value;
+    const endDate = document.getElementById('filterEndDate').value;
+    const station = document.getElementById('filterStation').value;
+    const plate = document.getElementById('filterPlate').value.toLowerCase();
+    
+    let allHistory = [];
+    const snapshot = await getDocs(query(collection(db, 'reservations'), orderBy('createdAt', 'desc')));
+    snapshot.forEach(doc => allHistory.push({id: doc.id, ...doc.data()}));
+    
+    const filtered = allHistory.filter(h => {
+        if(startDate && h.date < startDate) return false;
+        if(endDate && h.date > endDate) return false;
+        if(station && h.stationName !== station) return false;
+        if(plate && !h.vehiclePlate.toLowerCase().includes(plate)) return false;
+        return true;
+    });
+    
+    if(!filtered.length) return showToast('warning', 'Aucune donnée', 'Aucune réservation à exporter');
+    
+    let csv = '\uFEFFDate;Borne;Plaque;Debut;Fin;Charge;Notes;Statut\n';
+    filtered.forEach(h => {
+        csv += `"${formatDate(h.date)}";"${h.stationName}";"${h.vehiclePlate}";"${h.startTime}";"${h.endTime}";"${h.chargeTarget}%";"${h.notes || '-'}";"${h.status === 'completed' ? 'Complétée' : 'Active'}"\n`;
+    });
+    
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `historique_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    showToast('success', 'Export réussi', `${filtered.length} réservation(s) exportée(s)`);
 };
 
 loadStations();
